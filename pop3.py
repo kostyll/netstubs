@@ -7,6 +7,8 @@ class POP3Config:
     def __init__(self):
         print 'POP3Config created'
         self._dirr = None
+        self._user = "user"
+        self._password = "password"
 
     @property
     def dirr(self):
@@ -45,13 +47,21 @@ class Pop3ServerSideProto(protocol.Protocol):
         self.transport.write(self.run_cmd(command, *arguments)+END)
         # self.transport.socket.close()
 
+
 class POP3Factory(protocol.Factory):
     def buildProtocol(self, addr):
         return Pop3ServerSideProto()
 
-pop3config = POP3Config()
+def main():
+    import sys
+    pop3config = POP3Config()
+    pop3config
 
-factory = POP3Factory()
-factory.protocol = Pop3ServerSideProto
-reactor.listenTCP(8000, factory)
-reactor.run()
+    factory = POP3Factory()
+    factory.protocol = Pop3ServerSideProto
+    reactor.listenTCP(8000, factory)
+    reactor.run()
+
+
+if __name__ == "__main__":
+    main()
