@@ -1,0 +1,3 @@
+[submodule "secure-smtpd"]
+	path = secure-smtpd
+	url = git@github.com:bcoe/secure-smtpd.git
