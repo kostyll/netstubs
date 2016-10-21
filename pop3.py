@@ -2,7 +2,8 @@ import json
 from twisted.internet import protocol, reactor, endpoints
 
 import singleton
-@Singleton
+
+@singleton.Singleton
 class POP3Config:
     def __init__(self):
         print 'POP3Config created'
@@ -54,7 +55,7 @@ class POP3Factory(protocol.Factory):
 
 def main():
     import sys
-    pop3config = POP3Config()
+    pop3config = POP3Config.Instance()
     pop3config
 
     factory = POP3Factory()
