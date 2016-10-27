@@ -31,6 +31,14 @@ class Pop3ServerSideProto(protocol.Protocol):
         )
         return command_handler(self, *args, **kwargs)
 
+    def dataReceived(self, data, END=END):
+        stripped_command = data.split(END)
+        arguments = stripped_command[0].split()
+        command, arguments = arguments[0], arguments[1:]
+        print command, arguments
+        self.transport.write(self.run_cmd(command, *arguments)+END)
+        # self.transport.socket.close()P
+
     def cmd_USER(self, *args):
         return "+OK please send PASS command"
 
@@ -40,13 +48,8 @@ class Pop3ServerSideProto(protocol.Protocol):
     def cmd_LIST(self, *args):
         return "+OK MyUsername is welcome here"
 
-    def dataReceived(self, data, END=END):
-        stripped_command = data.split(END)
-        arguments = stripped_command[0].split()
-        command, arguments = arguments[0], arguments[1:]
-        print command, arguments
-        self.transport.write(self.run_cmd(command, *arguments)+END)
-        # self.transport.socket.close()
+    def cmd_UIDL(self, *args):
+        return ""
 
 
 class POP3Factory(protocol.Factory):
