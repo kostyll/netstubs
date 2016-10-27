@@ -1,0 +1,94 @@
+openssl s_client -connect pop.i.ua:995 -crlf
+....
+
++OK POP3 server ready <171475626.1477572602@pop.i.ua>
+USER andrew.freelance
++OK 
+PASS **********
++OK maildrop locked and ready
+LIST
++OK
+1 61013
+2 18665
+3 9731
+4 53830
+5 10464
+...
+6821 10315
+6822 62664
+6823 74234
+6824 108058
+.
+UIDL
++OK
+1 53c5bf8e5d4a
+2 53c5d03e5fe9
+3 53c5e0c262a4
+4 53c65d42861e
+5 53c732b1ad65
+....
+6823 5811e082488b
+6824 5811e85d4a6c
+.
+
+
+$ gnutls-cli  pop.i.ua -p 995 
+....
++OK POP3 server ready <288918879.1477573137@pop.i.ua>
+USER andrew.freelance@i.ua
++OK 
+PASS ******
++OK maildrop locked and ready
+RETR 1
++OK
+Authentication-Results: out02.mi6.kiev.ua;
+	spf=pass smtp.mail=notification+kjdm1u3d_vpd@facebookmail.com;
+	dkim=pass header.d=facebookmail.com
+Received: from outmail041.prn2.facebook.com ([66.220.144.168] helo=mx-out.facebook.com)
+	by out02.mi6.kiev.ua with esmtp (Exim 4.80.1)
+	(envelope-from <notification+kjdm1u3d_vpd@facebookmail.com>)
+	id 1X7CZb-0005Sp-W8
+	for andrew.freelance@i.ua; Wed, 16 Jul 2014 02:55:52 +0300
+Received: from facebook.com (suUGQvbl0ijDqJ2psmw3QHhaTy1A5ApgaxR7wrtr7wmd5/mbrWU6BHo91SqQF3kt 10.102.107.81)
+ by facebook.com with Thrift id 8fb6ac220c7b11e480cf0002c9df9366-e7fc400;
+ Tue, 15 Jul 2014 16:55:55 -0700
+X-Facebook: from 10.79.5.21 ([MTI3LjAuMC4x]) 
+	by async.facebook.com with HTTP (ZuckMail);
+Date: Tue, 15 Jul 2014 16:55:55 -0700
+To: =?UTF-8?B?0JDQvdC00YDQtdC5INCS0LDRgdC40LvRjNGG0LU=?=
+ =?UTF-8?B?0LI=?= <andrew.freelance@i.ua>
+From: "Facebook" <notification+kjdm1u3d_vpd@facebookmail.com>
+Reply-to: noreply <noreply@facebookmail.com>
+Subject: =?UTF-8?B?0JLRiyDQt9C90LDQtdGC0LUgRGltYSA=?=
+ =?UTF-8?B?Wm9za28sINCW0LXQvdGOINCh0LDQvA==?=
+ =?UTF-8?B?0LXQu9GO0Log0LggOCDQtNGA0YPQs9C40YU=?=
+ =?UTF-8?B?Pw==?=
+Message-ID: <0bd581f29ac52ab4d677a637f9f14904@async.facebook.com>
+X-Priority: 3
+X-Mailer: ZuckMail [version 1.00]
+Errors-To: notification+kjdm1u3d_vpd@facebookmail.com
+X-Facebook-Notify: pymk_email; mailid=a2fbcb9G5af3cb34aae7G0G114G3064bb8e
+X-FACEBOOK-PRIORITY: 0
+X-Auto-Response-Suppress: All
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="b1_0bd581f29ac52ab4d677a637f9f14904"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=facebookmail.com;
+	s=s1024-2013-q3; t=1405468555;
+	bh=KBa+BkguD5+49HbuwQgGYdPO3nh5+s8aq8SnaSO8KAs=;
+	h=Date:To:From:Subject:MIME-Version:Content-Type;
+	b=I6BQJB/ZBl7WYkQ1wLb5VNCDL4mc06tJ2leS/8pTWX0GpjmCYd4IeWx9a3/KkK/od
+	 a6eqpXZLveHP29UxL9sBhfxrxqsGZZzSH6jiZvLCAQWHgysIAgC492DVjK+cqI39lq
+	 KNETCTCnxDIP9nLvK7huasuNaXrtGpSIw1RIn6uU=
+
+
+--b1_0bd581f29ac52ab4d677a637f9f14904
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+.....
+--b1_0bd581f29ac52ab4d677a637f9f14904--
+.
+
+DELE 1
++OK
+QUIT
