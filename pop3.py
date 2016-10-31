@@ -1,37 +1,90 @@
+import os
+from email.header import decode_header, Header
 import json
 from twisted.internet import protocol, reactor, endpoints
 
 import singleton
 
+import argparse
+
 @singleton.Singleton
 class POP3Config:
     def __init__(self):
+        pass
+
+    def setConf(self, user, password, directory, port, from_, subject, to_):
         print 'POP3Config created'
-        self._dirr = None
-        self._user = "user"
-        self._password = "password"
+        self._dir = directory
+        self._user = user
+        self._password = password
+        self._port = port
+        self._from_ = from_
+        self._subject = subject
+        return self
 
     @property
-    def dirr(self):
-        return self._dirr
+    def directory(self):
+        return self._dir
 
-    def set_dirr(self, dirr):
-        self._dirr = dirr
+    @property
+    def port(self):
+        return self._port
 
+    @property
+    def user(self):
+        return self._user
 
+    @property
+    def password(self):
+        return self._password
+
+    @property
+    def from_(self):
+        return self._from_
+
+    @property
+    def to_(self):
+        return self._to_
+
+    @property
+    def subject(self):
+        return self._subject
 
 
 class Pop3ServerSideProto(protocol.Protocol):
+
+    def connectionMade(self):
+        self.transport.write("+OK POP3 server ready\r\n")
+
+    @property
+    def emls(self):
+        if not getattr(self, "_emls", None):
+            self._emls = map(lambda x: x[:-4], filter(lambda x: x.endswith(".eml"), os.listdir(POP3Config.Instance().directory)))
+        return self._emls
+
+    def size(self, uidl):
+        return os.path.getsize(os.path.join(POP3Config.Instance().directory, uidl+".eml"))
+
+    def encode(self, string):
+        return Header(string, 'utf-8').encode()
+
+    def make_header(self, header_name, header_value, encode=False):
+        return "%s: %s\r\n" % (header_name, self.encode(header_value) if encode else header_value)
+
     END = "\r\n"
     def run_cmd(self, cmd, *args, **kwargs):
+        print "Run cmd %s: args: %s" % (cmd, str(args))
         command_handler = getattr(
             self,
             "cmd_"+cmd.upper(),
-            lambda *args, **kwargs: "Not implemented"
+            lambda *args, **kwargs: "-ERR Unknown command"
         )
-        return command_handler(self, *args, **kwargs)
+        result = command_handler(*args, **kwargs)
+        print "cmd '%s' result:\n%s" % (cmd, result)
+        return result
 
     def dataReceived(self, data, END=END):
+        print "S = %s" % (id(self))
         stripped_command = data.split(END)
         arguments = stripped_command[0].split()
         command, arguments = arguments[0], arguments[1:]
@@ -40,16 +93,58 @@ class Pop3ServerSideProto(protocol.Protocol):
         # self.transport.socket.close()P
 
     def cmd_USER(self, *args):
+        print "s = %s" % (id(self))
+        print args
+        if POP3Config.Instance().user != args[0]:
+            self.transport.loseConnection()
         return "+OK please send PASS command"
 
+    def cmd_CAPA(self, *args):
+        """
+        TOP
+        USER
+        PASS
+        LOGIN-DELAY 60
+        UIDL
+        IMPLEMENTATION ClMail POP Server
+        .
+        """
+        return "+OK\r\n" + "\r\n".join(["USER", "PASS", "UIDL", "TOP", "IMPLEMENTATION pop3 server", "."])
+
     def cmd_PASS(self, *args):
+        print args
+        if POP3Config.Instance().password != args[0]:
+            self.transport.loseConnection()
         return "+OK MyUsername is welcome here"
 
     def cmd_LIST(self, *args):
-        return "+OK MyUsername is welcome here"
+        if len(args) == 1:
+            return "+OK\r\n" + "\r\n".join(map(lambda item: "%s %s" % (item[0]+1, self.size(item[1])), enumerate(self.emls)))+"\r\n."
+        else:
+            number = int(args[1])
+            return "+OK\r\n" + "%s %s" % (number, self.size(self.emls[number-1])) +"\r\n."
 
     def cmd_UIDL(self, *args):
-        return ""
+        return "+OK\r\n" + "\r\n".join(map(lambda item: "%s %s" % (item[0]+1, item[1]), enumerate(self.emls)))+"\r\n."
+
+    def cmd_STAT(self, *args):
+        return "+OK %s %s\r\n" % (len(self.emls), sum(map(lambda x: self.size(x), self.emls)))
+
+    def cmd_TOP(self, *args):
+        print ">>calling TOP..."
+        msg_number = int(args[0])
+        msg_lines = int(args[1])
+        print "sending %s: %s" % (msg_number, msg_lines)
+        result = "+OK\r\n" + \
+            self.make_header("From", POP3Config.Instance().from_, encode=True) + \
+            self.make_header("To", POP3Config.Instance().user, encode=True) + \
+            self.make_header("Content-Type", "text/plain") + \
+            self.make_header("Subject", POP3Config.Instance().subject, encode=True)
+        if msg_lines > 0:
+            result += "\r\n".join("test line %s" % x for x in xrange(msg_lines))
+        result += "\r\n."
+        print result
+        return result
 
 
 class POP3Factory(protocol.Factory):
@@ -58,12 +153,27 @@ class POP3Factory(protocol.Factory):
 
 def main():
     import sys
-    pop3config = POP3Config.Instance()
-    pop3config
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--login-pass-pare", "-l", dest="login_password", action="store", type=str, default="admin:admin")
+    parser.add_argument("--port", "-p", dest="port", action="store", type=int, default=110)
+    parser.add_argument("--directory", "-d", dest="directory", action="store", type=str, default="./")
+    parser.add_argument("--from", "-f", dest="from_", action="store", type=str, default="test@testhost")
+    parser.add_argument("--subject", "-s", dest="subject", action="store", type=str, default="testsubject")
+    parser.add_argument("--to", "-t", dest="to_", action="store", type=str, default="to@testhost")
+
+    try:
+        args = parser.parse_args()
+    except Exception, e:
+        parser.print_help()
+        return
+
+    print args
+    pop3config = POP3Config.Instance().setConf(*(args.login_password.split(":") + [args.directory, args.port, args.from_, args.subject, args.to_] ))
+    print pop3config.user
 
     factory = POP3Factory()
     factory.protocol = Pop3ServerSideProto
-    reactor.listenTCP(8000, factory)
+    reactor.listenTCP(pop3config.port, factory)
     reactor.run()
 
 
