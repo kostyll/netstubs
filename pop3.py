@@ -118,10 +118,10 @@ class Pop3ServerSideProto(protocol.Protocol):
         return "+OK MyUsername is welcome here"
 
     def cmd_LIST(self, *args):
-        if len(args) == 1:
+        if len(args) == 0:
             return "+OK\r\n" + "\r\n".join(map(lambda item: "%s %s" % (item[0]+1, self.size(item[1])), enumerate(self.emls)))+"\r\n."
         else:
-            number = int(args[1])
+            number = int(args[0])
             return "+OK\r\n" + "%s %s" % (number, self.size(self.emls[number-1])) +"\r\n."
 
     def cmd_UIDL(self, *args):
@@ -130,21 +130,31 @@ class Pop3ServerSideProto(protocol.Protocol):
     def cmd_STAT(self, *args):
         return "+OK %s %s\r\n" % (len(self.emls), sum(map(lambda x: self.size(x), self.emls)))
 
-    def cmd_TOP(self, *args):
-        print ">>calling TOP..."
-        msg_number = int(args[0])
-        msg_lines = int(args[1])
-        print "sending %s: %s" % (msg_number, msg_lines)
-        result = "+OK\r\n" + \
-            self.make_header("From", POP3Config.Instance().from_, encode=True) + \
+    def headers(self):
+        return self.make_header("From", POP3Config.Instance().from_, encode=True) + \
             self.make_header("To", POP3Config.Instance().user, encode=True) + \
             self.make_header("Content-Type", "text/plain") + \
             self.make_header("Subject", POP3Config.Instance().subject, encode=True)
+
+    def cmd_TOP(self, *args):
+        print ">>calling TOP..."
+        msg_number = int(args[0])
+        try:
+            msg_lines = int(args[1])
+        except IndexError:
+            msg_lines = 0
+        print "sending %s: %s" % (msg_number, msg_lines)
+        result = "+OK\r\n" + self.headers()
         if msg_lines > 0:
             result += "\r\n".join("test line %s" % x for x in xrange(msg_lines))
         result += "\r\n."
         print result
         return result
+
+    def cmd_RETR(self, *args):
+        number = int(args[0])
+        result = "+OK\r\n" + self.headers() + open()
+
 
 
 class POP3Factory(protocol.Factory):
