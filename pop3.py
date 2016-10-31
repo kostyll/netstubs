@@ -153,8 +153,12 @@ class Pop3ServerSideProto(protocol.Protocol):
 
     def cmd_RETR(self, *args):
         number = int(args[0])
-        result = "+OK\r\n" + self.headers() + open()
+        result = "+OK\r\n" + self.headers() + open(self.emls[number-1]+".eml", "rt").read() + "\r\n."
+        return result
 
+    def cmd_QUIT(self, *args):
+        self.transport.loseConnection()
+        return ""
 
 
 class POP3Factory(protocol.Factory):
