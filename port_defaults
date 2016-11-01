@@ -3,9 +3,9 @@ smtp_free=True
 pop3_ssl=
 pop3_tls=995
 smtp_ssl=
-smtp_tls=587
+smtp_tls=465
 pop3=
-smtp=
+smtp=587
 pop3_host=pop.gmail.com
 smtp_host=smtp.gmail.com
 [MAIL]

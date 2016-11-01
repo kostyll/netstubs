@@ -1,6 +1,5 @@
 import os
 from email.header import decode_header, Header
-import json
 from twisted.internet import protocol, reactor, endpoints
 
 import singleton
@@ -154,7 +153,7 @@ class Pop3ServerSideProto(protocol.Protocol):
 
     def cmd_RETR(self, *args):
         number = int(args[0])
-        result = "+OK\r\n" + self.headers() + "\r\n" + open(self.emls[number-1]+".eml", "rt").read() + "\r\n."
+        result = "+OK\r\n" + self.headers() + "\r\n" + open(os.path.join(POP3Config.Instance().directory, self.emls[number-1]+".eml"), "rt").read() + "\r\n."
         return result
 
     def cmd_QUIT(self, *args):
@@ -178,8 +177,11 @@ def make_parser():
     return parser
 
 
-def load_config(args):
-    POP3Config.Instance().setConf(*(args.login_password.split(":") + [args.directory, args.port, args.from_, args.subject, args.to_] ))
+def load_config(args, confcls=None):
+    if confcls is None:
+        confcls = POP3Config
+    confcls.Instance().setConf(*(args.login_password.split(":") + [args.directory, args.port, args.from_, args.subject, args.to_] ))
+    return confcls.Instance()
 
 def main():
     parser = make_parser()

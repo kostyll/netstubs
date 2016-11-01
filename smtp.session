@@ -1,0 +1,21 @@
+$ telnet localhost 2525
+Trying 127.0.0.1...
+Connected to localhost.
+Escape character is '^]'.
+220 andrew-System-Product-Name NO UCE NO UBE NO RELAY PROBES ESMTP
+EHLO localhost
+250-andrew-System-Product-Name Hello 127.0.0.1, nice to meet you
+250 AUTH PLAIN LOGIN
+AUTH PLAIN AGFkbWluAGFkbWlu
+235 Authentication successful.
+MAIL FROM: <me@testhost>
+250 Sender address accepted
+RCPT TO: <console>
+250 Recipient address accepted
+DATA
+354 Continue
+Subject: test subject!
+Thist is the test messag123123123e ....
+.
+250 Delivery in progress
+Connection closed by foreign host.
