@@ -166,8 +166,8 @@ class POP3Factory(protocol.Factory):
     def buildProtocol(self, addr):
         return Pop3ServerSideProto()
 
-def main():
-    import sys
+
+def make_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument("--login-pass-pare", "-l", dest="login_password", action="store", type=str, default="admin:admin")
     parser.add_argument("--port", "-p", dest="port", action="store", type=int, default=110)
@@ -175,6 +175,14 @@ def main():
     parser.add_argument("--from", "-f", dest="from_", action="store", type=str, default="test@testhost")
     parser.add_argument("--subject", "-s", dest="subject", action="store", type=str, default="testsubject")
     parser.add_argument("--to", "-t", dest="to_", action="store", type=str, default="to@testhost")
+    return parser
+
+
+def load_config(args):
+    POP3Config.Instance().setConf(*(args.login_password.split(":") + [args.directory, args.port, args.from_, args.subject, args.to_] ))
+
+def main():
+    parser = make_parser()
 
     try:
         args = parser.parse_args()
@@ -182,13 +190,11 @@ def main():
         parser.print_help()
         return
 
-    print args
-    pop3config = POP3Config.Instance().setConf(*(args.login_password.split(":") + [args.directory, args.port, args.from_, args.subject, args.to_] ))
-    print pop3config.user
+    load_config(args)
 
     factory = POP3Factory()
     factory.protocol = Pop3ServerSideProto
-    reactor.listenTCP(pop3config.port, factory)
+    reactor.listenTCP(POP3Config.Instance().port, factory)
     reactor.run()
 
 
