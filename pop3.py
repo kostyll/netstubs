@@ -186,7 +186,7 @@ def save_pid(args):
         if args.pidfile:
             print "present"
             with open(args.pidfile, "wt") as f:
-                f.write("%s", os.getpid())
+                f.write("%s" % os.getpid())
     except Exception, e:
         pass
 
