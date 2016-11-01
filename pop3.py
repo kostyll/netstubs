@@ -180,9 +180,12 @@ def make_parser():
 
 def save_pid(conf):
     import os
-    if conf.pidfile:
-        with open(conf.pidfile, "wt") as f:
-            f.write("%s", os.getpid())
+    try:
+        if conf.pidfile:
+            with open(conf.pidfile, "wt") as f:
+                f.write("%s", os.getpid())
+    except:
+        pass
 
 def load_config(args, confcls=None):
     if confcls is None:
