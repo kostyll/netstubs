@@ -14,6 +14,9 @@ import pop3
 def main():
 
     parser = pop3.make_parser()
+    parser.add_argument("--server-key", type=str, action="store", dest="server_key")
+    parser.add_argument("--server-cert", type=str, action="store", dest="server_cert")
+
     try:
         args = parser.parse_args()
     except Exception, e:
@@ -31,7 +34,7 @@ def main():
         conf.port,
         factory,
         ssl.DefaultOpenSSLContextFactory(
-            'keys/server.key', 'keys/server.crt')
+            args.server_key, args.server_cert)
     )
     reactor.run()
 

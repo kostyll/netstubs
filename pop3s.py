@@ -12,18 +12,20 @@ class POP3FactorySecured(protocol.Factory):
 
 def main():
     parser = pop3.make_parser()
+    parser.add_argument("--server-key", type=str, action="store", dest="server_key")
+    parser.add_argument("--server-cert", type=str, action="store", dest="server_cert")
     try:
         args = parser.parse_args()
     except Exception, e:
         parser.print_help()
         return
-    pop3.load_config(args)
+    conf = pop3.load_config(args)
 
     factory = POP3FactorySecured()
     factory.protocol = Pop3ServerSideProtoSecured
     reactor.listenSSL(pop3.POP3Config.Instance().port, factory,
                       ssl.DefaultOpenSSLContextFactory(
-            'keys/server.key', 'keys/server.crt'))
+            args.server_key, args.server_cert))
     reactor.run()
 
 
