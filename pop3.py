@@ -178,13 +178,16 @@ def make_parser():
     parser.add_argument("--pid", dest="pidfile", action="store")
     return parser
 
-def save_pid(conf):
+def save_pid(args):
     import os
+    print "trying to save pid"
     try:
-        if conf.pidfile:
-            with open(conf.pidfile, "wt") as f:
+        print "checking pid option"
+        if args.pidfile:
+            print "present"
+            with open(args.pidfile, "wt") as f:
                 f.write("%s", os.getpid())
-    except:
+    except Exception, e:
         pass
 
 def load_config(args, confcls=None):
@@ -202,7 +205,8 @@ def main():
         parser.print_help()
         return
 
-    save_pid(load_config(args))
+    load_config(args)
+    save_pid(args)
 
     factory = POP3Factory()
     factory.protocol = Pop3ServerSideProto

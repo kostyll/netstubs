@@ -152,7 +152,7 @@ def main():
             parser.print_help()
             return
         conf = pop3.load_config(args, SMTPConfig)
-        pop3.save_pid(conf)
+        pop3.save_pid(args)
     
     portal = Portal(SimpleRealm())
     checker = InMemoryUsernamePasswordDatabaseDontUse()

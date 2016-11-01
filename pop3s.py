@@ -21,7 +21,7 @@ def main():
         parser.print_help()
         return
     conf = pop3.load_config(args)
-    pop3.save_pid(conf)
+    pop3.save_pid(args)
 
     factory = POP3FactorySecured()
     factory.protocol = Pop3ServerSideProtoSecured
