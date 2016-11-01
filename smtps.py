@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from twisted.cred.checkers import InMemoryUsernamePasswordDatabaseDontUse
 
 from twisted.application import internet

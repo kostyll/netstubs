@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import os
 from email.header import decode_header, Header
 from twisted.internet import protocol, reactor, endpoints

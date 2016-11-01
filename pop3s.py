@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from twisted.internet import protocol, reactor, endpoints, ssl
 
 import pop3
