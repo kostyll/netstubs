@@ -20,6 +20,7 @@ class POP3Config:
         self._port = port
         self._from_ = from_
         self._subject = subject
+        self._to_ = to_
         return self
 
     @property
@@ -131,8 +132,8 @@ class Pop3ServerSideProto(protocol.Protocol):
         return "+OK %s %s\r\n" % (len(self.emls), sum(map(lambda x: self.size(x), self.emls)))
 
     def headers(self):
-        return self.make_header("From", POP3Config.Instance().from_, encode=True) + \
-            self.make_header("To", POP3Config.Instance().user, encode=True) + \
+        return self.make_header("From", "<%s>" % POP3Config.Instance().from_, encode=False) + \
+            self.make_header("To", "<%s>" % POP3Config.Instance().to_, encode=False) + \
             self.make_header("Content-Type", "text/plain") + \
             self.make_header("Subject", POP3Config.Instance().subject, encode=True)
 
@@ -153,7 +154,7 @@ class Pop3ServerSideProto(protocol.Protocol):
 
     def cmd_RETR(self, *args):
         number = int(args[0])
-        result = "+OK\r\n" + self.headers() + open(self.emls[number-1]+".eml", "rt").read() + "\r\n."
+        result = "+OK\r\n" + self.headers() + "\r\n" + open(self.emls[number-1]+".eml", "rt").read() + "\r\n."
         return result
 
     def cmd_QUIT(self, *args):
