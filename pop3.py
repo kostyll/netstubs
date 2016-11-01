@@ -174,8 +174,14 @@ def make_parser():
     parser.add_argument("--from", "-f", dest="from_", action="store", type=str, default="test@testhost")
     parser.add_argument("--subject", "-s", dest="subject", action="store", type=str, default="testsubject")
     parser.add_argument("--to", "-t", dest="to_", action="store", type=str, default="to@testhost")
+    parser.add_argument("--pid", dest="pidfile", action="store")
     return parser
 
+def save_pid(conf):
+    import os
+    if conf.pidfile:
+        with open(conf.pidfile, "wt") as f:
+            f.write("%s", os.getpid())
 
 def load_config(args, confcls=None):
     if confcls is None:
@@ -192,7 +198,7 @@ def main():
         parser.print_help()
         return
 
-    load_config(args)
+    save_pid(load_config(args))
 
     factory = POP3Factory()
     factory.protocol = Pop3ServerSideProto
