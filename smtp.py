@@ -97,9 +97,9 @@ class ConsoleMessageDelivery:
 class ConsoleMessage:
     def __init__(self):
         self.lines = []
-
     
     def lineReceived(self, line):
+        print(line)
         self.lines.append(line)
 
     
@@ -114,12 +114,40 @@ class ConsoleMessage:
         return defer.succeed(None)
 
     def connectionLost(self):
+        print("connection is lost")
         # There was an error, throw away the stored lines
         self.lines = None
 
+from twisted.mail.smtp import ESMTP
+class OwnSMTP(ESMTP):
+
+    def connectionMade(self):
+        print("Connection made")
+        return ESMTP.connectionMade(self)
+
+    def lineReceived(self, line):
+        print("lineReceived %s" % line)
+        result = ESMTP.lineReceived(self, line)
+        print("R = %s" % result)
+        return result
+
+    def sendLine(self, line):
+        print("sendLine: %s" % line)
+        return ESMTP.sendLine(self, line)
+
+
+    def do_DATA(self, *args, **kwargs):
+        print (args, kwargs)
+        return ESMTP.do_DATA(self, *args, **kwargs)
+
+    def ext_auth(self, *args, **kwargs):
+        print ("EXT_AUTH")
+        print (args, kwargs)
+        return ESMTP.ext_auth(self, *args, **kwargs)        
+
 
 class ConsoleSMTPFactory(smtp.SMTPFactory):
-    protocol = smtp.ESMTP
+    protocol = OwnSMTP
 
     def __init__(self, *a, **kw):
         smtp.SMTPFactory.__init__(self, *a, **kw)
