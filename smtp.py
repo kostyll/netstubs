@@ -120,13 +120,14 @@ class ConsoleMessage:
 
 from twisted.mail.smtp import ESMTP
 class OwnSMTP(ESMTP):
+    MAX_LENGTH = 10 ** 6
 
     def connectionMade(self):
         print("Connection made")
         return ESMTP.connectionMade(self)
 
     def lineReceived(self, line):
-        print("lineReceived %s" % line)
+        print("lineReceived '%s'" % line)
         result = ESMTP.lineReceived(self, line)
         print("R = %s" % result)
         return result
